@@ -30,7 +30,7 @@ def score_email(text, keywords, bad_domains):
 
 # Streamlit UI
 st.set_page_config(page_title="PhishSniff", page_icon="🕵️")
-st.title("🕵️ PhishSniff: Phishing Message Detector")
+st.title("🕵️ PhishyWeb: Phishing Message Detector")
 
 text_input = st.text_area("Paste a suspicious email or message here:", height=250)
 

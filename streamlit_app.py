@@ -26,31 +26,15 @@ def score_email(text, keywords, bad_domains):
 
     return findings, score
 
+# Set up app
 st.set_page_config(page_title="PhishyWeb", page_icon="🐟")
 st.title("🐟 PhishyWeb: Phishing Message Detector")
 
-# Session state for clearing input
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False
+# User input
+input_text = st.text_area("Paste a suspicious email or message here:", height=250)
 
-def reset():
-    st.session_state.submitted = False
-    st.session_state.input_text = ""
-
-# Text input and submit button
-input_text = st.text_area("Paste a suspicious email or message here:", key="input_text", height=250)
-submit = st.button("Analyze")
-reset_button = st.button("Reset")
-
-# Reset logic
-if reset_button:
-    reset()
-
-# Analyze logic
-if submit:
-    st.session_state.submitted = True
-
-if st.session_state.submitted and input_text:
+# Analyze button
+if st.button("Analyze") and input_text:
     keywords = load_keywords("phishing_rules/keywords.txt")
     bad_domains = load_keywords("phishing_rules/suspicious_domains.txt")
 
@@ -61,7 +45,7 @@ if st.session_state.submitted and input_text:
         st.markdown(f"- {f}")
 
     st.markdown("---")
-    st.subheader("📊 Risk Score: " + str(score))
+    st.subheader(f"📊 Risk Score: {score}")
     if score >= 5:
         st.error("🟥 HIGH RISK – Likely phishing")
     elif score >= 3:

@@ -1,54 +1,44 @@
 import streamlit as st
-import re
+import openai
+import os
 
-# Load rules
-def load_keywords(file_path):
-    with open(file_path, "r") as f:
-        return [line.strip().lower() for line in f.readlines()]
+# Load OpenAI API key from environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def score_email(text, keywords, bad_domains):
-    score = 0
-    findings = []
+# Function to send email content to GPT for phishing evaluation
+def gpt_check(text):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # or "gpt-4" if available
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a cybersecurity assistant. Analyze email or message content and determine if it is a phishing attempt."
+                },
+                {
+                    "role": "user",
+                    "content": f"Is this message a phishing attempt? Give a clear YES or NO answer, and explain why:\n\n{text}"
+                }
+            ],
+            temperature=0.2
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"❌ Error with GPT API: {str(e)}"
 
-    text_lower = text.lower()
-    urls = re.findall(r'(https?://[^\s]+)', text)
-
-    for keyword in keywords:
-        if keyword in text_lower:
-            findings.append(f"🔑 Keyword found: *{keyword}*")
-            score += 1
-
-    for url in urls:
-        for domain in bad_domains:
-            if domain in url:
-                findings.append(f"🔗 Suspicious URL: {url}")
-                score += 2
-
-    return findings, score
-
-# Set up app
+# Set up Streamlit app
 st.set_page_config(page_title="PhishyWeb", page_icon="🐟")
 st.title("🐟 PhishyWeb: Phishing Message Detector")
 
-# User input
+# Text input from user
 input_text = st.text_area("Paste a suspicious email or message here:", height=250)
 
-# Analyze button
-if st.button("Analyze") and input_text:
-    keywords = load_keywords("phishing_rules/keywords.txt")
-    bad_domains = load_keywords("phishing_rules/suspicious_domains.txt")
-
-    findings, score = score_email(input_text, keywords, bad_domains)
-
-    st.subheader("🔍 Results")
-    for f in findings:
-        st.markdown(f"- {f}")
-
-    st.markdown("---")
-    st.subheader(f"📊 Risk Score: {score}")
-    if score >= 5:
-        st.error("🟥 HIGH RISK – Likely phishing")
-    elif score >= 3:
-        st.warning("🟧 MEDIUM RISK – Suspicious signs detected")
+# Main analysis button
+if st.button("🔍 Analyze"):
+    if input_text.strip() == "":
+        st.warning("Please enter a message before analyzing.")
     else:
-        st.success("🟩 LOW RISK – No major red flags")
+        with st.spinner("Analyzing with AI..."):
+            result = gpt_check(input_text)
+            st.subheader("🧠 GPT Analysis")
+            st.info(result)

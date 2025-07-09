@@ -1,4 +1,3 @@
-
 import streamlit as st
 import re
 
@@ -7,7 +6,6 @@ def load_keywords(file_path):
     with open(file_path, "r") as f:
         return [line.strip().lower() for line in f.readlines()]
 
-# Scoring function
 def score_email(text, keywords, bad_domains):
     score = 0
     findings = []
@@ -28,17 +26,35 @@ def score_email(text, keywords, bad_domains):
 
     return findings, score
 
-# Streamlit UI
-st.set_page_config(page_title="PhishSniff", page_icon="🕵️")
-st.title("🕵️ PhishyWeb: Phishing Message Detector")
+st.set_page_config(page_title="PhishyWeb", page_icon="🐟")
+st.title("🐟 PhishyWeb: Phishing Message Detector")
 
-text_input = st.text_area("Paste a suspicious email or message here:", height=250)
+# Session state for clearing input
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
 
-if text_input:
+def reset():
+    st.session_state.submitted = False
+    st.session_state.input_text = ""
+
+# Text input and submit button
+input_text = st.text_area("Paste a suspicious email or message here:", key="input_text", height=250)
+submit = st.button("Analyze")
+reset_button = st.button("Reset")
+
+# Reset logic
+if reset_button:
+    reset()
+
+# Analyze logic
+if submit:
+    st.session_state.submitted = True
+
+if st.session_state.submitted and input_text:
     keywords = load_keywords("phishing_rules/keywords.txt")
     bad_domains = load_keywords("phishing_rules/suspicious_domains.txt")
 
-    findings, score = score_email(text_input, keywords, bad_domains)
+    findings, score = score_email(input_text, keywords, bad_domains)
 
     st.subheader("🔍 Results")
     for f in findings:

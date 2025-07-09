@@ -1,6 +1,6 @@
 import streamlit as st
-import openai
-import os
+from openai import OpenAI
+
 
 # Load OpenAI API key from environment variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -8,7 +8,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Function to send email content to GPT for phishing evaluation
 def gpt_check(text):
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",  # or "gpt-4" if available
             messages=[
                 {
@@ -25,7 +25,6 @@ def gpt_check(text):
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"❌ Error with GPT API: {str(e)}"
-
 # Set up Streamlit app
 st.set_page_config(page_title="PhishyWeb", page_icon="🐟")
 st.title("🐟 PhishyWeb: Phishing Message Detector")

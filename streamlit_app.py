@@ -1,5 +1,7 @@
 import streamlit as st
+import os
 from openai import OpenAI
+
 
 
 # Load OpenAI API key from environment variable

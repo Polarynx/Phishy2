@@ -4,7 +4,7 @@ from transformers import pipeline
 # Load the phishing classifier pipeline from HuggingFace
 @st.cache_resource
 def load_model():
-    return pipeline("text-classification", model="mrm8488/bert-tiny-finetuned-phishing")
+    return pipeline("text-classification", model="distilbert-base-uncased-finetuned-sst-2-english")
 
 clf = load_model()
 

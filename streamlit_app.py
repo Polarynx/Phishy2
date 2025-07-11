@@ -1,34 +1,44 @@
 import streamlit as st
 from transformers import pipeline
+import torch
 
-# Load the phishing classifier pipeline from HuggingFace
+st.set_page_config(page_title="PhishyWeb", layout="centered")
+st.title("🧠 PhishyWeb - Email Phishing Detector")
+st.write("Paste any email or message below to check if it's phishing.")
+
 @st.cache_resource
 def load_model():
-    return pipeline("text-classification", model="distilbert-base-uncased-finetuned-sst-2-english")
+    return pipeline("text-classification", model="mrm8488/bert-tiny-finetuned-phishing")
 
 clf = load_model()
 
-# Streamlit UI
-st.set_page_config(page_title="PhishyWeb", page_icon="🐟")
-st.title("🐟 PhishyWeb: Phishing Message Detector (ML-Based)")
+# Text input
+text_input = st.text_area("📩 Paste the email or message here:", height=200)
 
-input_text = st.text_area("Paste a suspicious email or message below:", height=250)
-
-if st.button("🔍 Analyze with AI"):
-    if not input_text.strip():
-        st.warning("Please enter a message.")
+if st.button("🔍 Analyze Message"):
+    if text_input.strip() == "":
+        st.warning("Please paste a message before analyzing.")
     else:
-        with st.spinner("Scanning message..."):
-            try:
-                result = clf(input_text[:512])[0]  # Truncate to 512 tokens
-                label = result['label']
-                score = round(result['score'] * 100, 2)
+        with st.spinner("Analyzing..."):
+            result = clf(text_input)
+            label = result[0]['label']
+            score = result[0]['score']
 
-                st.subheader("🤖 ML Model Verdict")
-                if "not" in label.lower():
-                    st.success(f"🟢 Not Phishing ({score}%)")
+            # Interpret result
+            if label == 'LABEL_1':  # LABEL_1 = phishing in this model
+                if score >= 0.9:
+                    verdict = "🔴 Phishing (Very High Confidence)"
+                elif score >= 0.6:
+                    verdict = "🟠 Suspicious (Check Carefully)"
                 else:
-                    st.error(f"🔴 Phishing Detected ({score}%)")
+                    verdict = "🟢 Likely Safe"
+            else:
+                verdict = "🟢 Safe"
 
-            except Exception as e:
-                st.error(f"❌ Error: {e}")
+            st.markdown(f"### 🧾 Verdict: {verdict}")
+            st.markdown(f"**Model Confidence:** `{score:.2%}`")
+
+# Footer
+st.markdown("---")
+st.markdown("Made with ❤️ by Polarynx | Powered by HuggingFace Transformers")
+

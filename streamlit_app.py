@@ -40,5 +40,5 @@ if st.button("🔍 Analyze Message"):
 
 # Footer
 st.markdown("---")
-st.markdown("Made with ❤️ by Polarynx | Powered by HuggingFace Transformers")
+st.markdown("Made by Polarynx | Powered by HuggingFace Transformers")
 

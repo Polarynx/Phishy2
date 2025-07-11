@@ -8,7 +8,7 @@ st.write("Paste any email or message below to check if it's phishing.")
 
 @st.cache_resource
 def load_model():
-    return pipeline("text-classification", model="mrm8488/bert-tiny-finetuned-phishing")
+    return pipeline("text-classification", model="distilbert-base-uncased-finetuned-sst-2-english")
 
 clf = load_model()
 
@@ -25,15 +25,16 @@ if st.button("🔍 Analyze Message"):
             score = result[0]['score']
 
             # Interpret result
-            if label == 'LABEL_1':  # LABEL_1 = phishing in this model
+            if label == 'NEGATIVE':  # use for potential phishing
                 if score >= 0.9:
-                    verdict = "🔴 Phishing (Very High Confidence)"
+                    verdict = "🔴 Likely Phishing (High Confidence)"
                 elif score >= 0.6:
-                    verdict = "🟠 Suspicious (Check Carefully)"
+                    verdict = "🟠 Suspicious"
                 else:
-                    verdict = "🟢 Likely Safe"
+                    verdict = "🟢 Possibly Safe"
             else:
                 verdict = "🟢 Safe"
+
 
             st.markdown(f"### 🧾 Verdict: {verdict}")
             st.markdown(f"**Model Confidence:** `{score:.2%}`")
